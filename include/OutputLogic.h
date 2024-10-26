@@ -1,6 +1,7 @@
 #pragma once
-
 #include  <PowerOut.h>
+
+extern ADC_HandleTypeDef hadc1;
 
 namespace Outputs
 {
@@ -11,7 +12,7 @@ namespace Outputs
 	static constexpr uint8_t CFG_ShuntResistance = 5;	// Сопротивление шунта, миллиомы.
 	/* */
 	
-	PowerOut<CFG_PortCount> outObj(CFG_RefVoltage, CFG_INA180_Gain, CFG_ShuntResistance);
+	PowerOut<CFG_PortCount> outObj(&hadc1, CFG_RefVoltage, CFG_INA180_Gain, CFG_ShuntResistance);
 	
 	void OnShortCircuit(uint8_t num, uint16_t current)
 	{

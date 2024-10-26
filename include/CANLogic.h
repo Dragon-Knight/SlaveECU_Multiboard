@@ -8,6 +8,9 @@ extern CAN_HandleTypeDef hcan;
 
 namespace CANLib
 {
+	EasyPinD can_rs(GPIOA, {GPIO_PIN_15, GPIO_MODE_OUTPUT_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW}, GPIO_PIN_SET);
+
+
 	//*********************************************************************
 	// CAN Library settings
 	//*********************************************************************
@@ -124,8 +127,18 @@ namespace CANLib
 		return (value > 0) ? 0xFF : 0;
 	}
 	
+	void HardwareSetup()
+	{
+		can_rs.Init();
+		
+		HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING | CAN_IT_ERROR | CAN_IT_BUSOFF | CAN_IT_LAST_ERROR_CODE);
+		HAL_CAN_Start(&hcan);
+	}
+	
 	inline void Setup()
 	{
+		HardwareSetup();
+/*		
 		obj_trunk_control
 			.RegisterFunctionSet([](can_frame_t &can_frame, can_error_t &error) -> can_result_t
 			{
@@ -158,7 +171,7 @@ namespace CANLib
 
 				return CAN_RESULT_IGNORE;
 			});
-		
+*/		
 		
 		obj_secelec_control
 			.RegisterFunctionSet([](can_frame_t &can_frame, can_error_t &error) -> can_result_t
