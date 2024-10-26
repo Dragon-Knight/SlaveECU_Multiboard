@@ -20,7 +20,7 @@ namespace Analog
 
 	void Result(uint8_t address, uint16_t value)
 	{
-		if(address > 16) return;
+		if(address > 15) return;
 		
 		adc_value[address] = value;
 
@@ -36,9 +36,11 @@ namespace Analog
 	uint16_t GetValAsMvolt(uint8_t port)
 	{
 		if(--port >= 8){}
+
+		return 0;
 	}
 
-	AnalogMux<4> mux( ADC_Req, Result, 
+	AnalogMux<4, 30> mux( ADC_Req, Result, 
 		EasyPinD::d_pin_t{GPIOB, GPIO_PIN_4}, 
 		EasyPinD::d_pin_t{GPIOB, GPIO_PIN_5}, 
 		EasyPinD::d_pin_t{GPIOB, GPIO_PIN_6}, 
@@ -48,6 +50,7 @@ namespace Analog
 
 	inline void Setup()
 	{
+		mux.Init();
 		mux_pin.Init();
 		
 		return;
