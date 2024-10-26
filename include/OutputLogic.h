@@ -21,6 +21,7 @@ namespace Outputs
 	
 	inline void Setup()
 	{
+/*
 		outObj.AddPort( {GPIOA, GPIO_PIN_8}, {GPIOA, ADC_CHANNEL_6}, 5000 );
 		outObj.AddPort( {GPIOB, GPIO_PIN_15}, {GPIOA, ADC_CHANNEL_5}, 5000 );
 		outObj.AddPort( {GPIOB, GPIO_PIN_14}, {GPIOA, ADC_CHANNEL_4}, 5000 );
@@ -28,7 +29,7 @@ namespace Outputs
 		outObj.AddPort( {GPIOB, GPIO_PIN_12}, {GPIOA, ADC_CHANNEL_2}, 5000 );
 		outObj.AddPort( {GPIOB, GPIO_PIN_2}, {GPIOA, ADC_CHANNEL_1}, 10000 );
 		outObj.Init();
-
+*/
 		//outObj.On(4);
 		//outObj.On(6);
 		//outObj.Off(1);
