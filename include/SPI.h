@@ -40,9 +40,7 @@ namespace SPI
 	SPIManager<4> manager(SPI_Config, SPI_Write, SPI_Read, SPI_WriteRead);
 	SPI_ZD25Q80B flash({GPIOB, GPIO_PIN_12}, SPI_BAUDRATEPRESCALER_2);
 	SPI_CAT25080 eeprom({GPIOA, GPIO_PIN_8}, SPI_BAUDRATEPRESCALER_8);
-	SPI_HC595<1> hc595({GPIOB, GPIO_PIN_8}, {GPIOB, GPIO_PIN_3}, SPI_BAUDRATEPRESCALER_8);
-	//EasyPin pin(GPIOA, {GPIO_PIN_0, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH}, GPIO_PIN_SET);
-	EasyPinD hc595_oe(GPIOB, {GPIO_PIN_2, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH}, GPIO_PIN_RESET);
+	SPI_HC595<1> hc595({GPIOB, GPIO_PIN_8}, {GPIOB, GPIO_PIN_3}, {GPIOB, GPIO_PIN_2}, SPI_BAUDRATEPRESCALER_8);
 
 	/*
 	#define COMPILE_TIME_SIZEOF(t)      template<int s> struct SIZEOF_ ## t ## _IS; \
@@ -132,11 +130,11 @@ namespace SPI
 
 	inline void Setup()
 	{
-		hc595_oe.Init();
-		
 		manager.AddDevice(flash);
 		manager.AddDevice(eeprom);
 		manager.AddDevice(hc595);
+
+		hc595.OutputEnable();
 		
 
 		uint8_t dev_id[3] = {0x00};
