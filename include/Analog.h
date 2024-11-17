@@ -7,7 +7,7 @@ extern ADC_HandleTypeDef hadc1;
 
 namespace Analog
 {
-	EasyPinA mux_pin(&hadc1, GPIOB, GPIO_PIN_1, ADC_CHANNEL_9);
+	EasyPinA mux_pin(&hadc1, GPIOB, GPIO_PIN_1, ADC_CHANNEL_9, ADC_SAMPLETIME_55CYCLES_5);
 
 	// Хранит сырые данные АЦП полученные через мультиплексор
 	uint16_t adc_value[16];
@@ -26,8 +26,8 @@ namespace Analog
 
 		if(address == 15)
 		{
-			//DEBUG_LOG_TOPIC("MUX", "%04d %04d %04d %04d %04d %04d %04d %04d %04d %04d %04d %04d %04d %04d %04d %04d\n", adc_value[0], adc_value[1], adc_value[2], adc_value[3], adc_value[4], 
-			//adc_value[5], adc_value[6], adc_value[7], adc_value[8], adc_value[9], adc_value[10], adc_value[11], adc_value[12], adc_value[13], adc_value[14], adc_value[15]);
+			DEBUG_LOG_TOPIC("MUX", "%04d %04d %04d %04d %04d %04d %04d %04d %04d %04d %04d %04d %04d %04d %04d %04d\n", adc_value[0], adc_value[1], adc_value[2], adc_value[3], adc_value[4], 
+			adc_value[5], adc_value[6], adc_value[7], adc_value[8], adc_value[9], adc_value[10], adc_value[11], adc_value[12], adc_value[13], adc_value[14], adc_value[15]);
 		}
 		
 		return;
