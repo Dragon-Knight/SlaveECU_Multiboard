@@ -69,6 +69,14 @@ namespace CANLib
 				
 				break;
 			}
+			case CAN_FUNC_REQUEST_IN:
+			{
+				uint8_t result = (Outputs::outObj.GetState(port) > 0) ? 0xFF : 0x00;
+				can_frame.function_id = CAN_FUNC_EVENT_OK;
+				can_frame.data[0] = result;
+				
+				break;
+			}
 			default:
 			{
 				break;
