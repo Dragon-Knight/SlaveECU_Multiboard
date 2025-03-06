@@ -4,9 +4,11 @@
 #include "SPI.h"
 #include "About.h"
 #include "Leds.h"
+#include <Config.h>
 #include "OutputLogic.h"
 #include "CANLogic.h"
 #include <Analog.h>
+#include <WS2812Logic.h>
 
 ADC_HandleTypeDef hadc1;
 CAN_HandleTypeDef hcan;
@@ -103,6 +105,7 @@ int main(void)
 	CANLib::Setup();
 	Analog::Setup();
 	Outputs::Setup();
+	WS2812Logic::Setup();
 	
 	uint32_t current_time = HAL_GetTick();
 	while (1)
@@ -116,6 +119,7 @@ int main(void)
 		CANLib::Loop(current_time);
 		Analog::Loop(current_time);
 		Outputs::Loop(current_time);
+		WS2812Logic::Loop(current_time);
 	}
 }
 
