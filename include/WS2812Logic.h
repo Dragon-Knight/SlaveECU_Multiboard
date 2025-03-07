@@ -13,8 +13,8 @@
 #define DISPLAY_WIDTH	128
 #define DISPLAY_HEIGHT	16
 #include <WS2812Manager.h>
-#include <effects\WS2812EffectFire.h>
-#include <effects\WS2812EffectSphere.h>
+#include <effects/WS2812EffectFire.h>
+#include <effects/WS2812EffectSphere.h>
 
 
 //extern TIM_HandleTypeDef htim2;
@@ -585,7 +585,7 @@ inline void Loop(uint32_t &current_time)
 */
 
 	
-	static uint16_t draw_idx = 0;
+	//static uint16_t draw_idx = 0;
 	if(manager.frame_buffer.is_ready == true && manager.frame_buffer.is_drawing == false)
 	{
 /*
