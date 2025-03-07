@@ -8,6 +8,15 @@
 #include "WS2812HW.h"
 
 
+
+
+#define DISPLAY_WIDTH	128
+#define DISPLAY_HEIGHT	16
+#include <WS2812Manager.h>
+#include <effects\WS2812EffectFire.h>
+#include <effects\WS2812EffectSphere.h>
+
+
 //extern TIM_HandleTypeDef htim2;
 //extern DMA_HandleTypeDef hdma_tim2_ch1;
 
@@ -39,7 +48,7 @@ namespace WS2812Logic
 		uint8_t B;
 	} color_t;
 
-	color_t _frame_buff[(CFG_Width * CFG_Height)];
+	//color_t _frame_buff[(CFG_Width * CFG_Height)];
 
 	
 	uint8_t *frame_buffer_ptr;
@@ -49,15 +58,28 @@ namespace WS2812Logic
 	
 
 
+/*
+	struct frame_buffer_t
+	{
+		bool is_drawing;		// Флаг отрисовки буфера на экран
+		bool is_ready;			// Флаг готовности буфера к отрисовке
+		union
+		{
+			uint8_t raw[(CFG_Width * CFG_Height * sizeof(color_t))];
+			color_t pixel[(CFG_Width * CFG_Height)];
+		};
+	} frame_buffer;
+*/
 
 
 
 
 
 
+	WS2812Manager manager;
+	WS2812EffectFire effect_fire;
+	WS2812EffectSphere effect_sphere;
 
-
-	bool draw_run = false;
 
 
 
@@ -242,7 +264,8 @@ static void RGB_TIM_DMADelayPulseCplt(DMA_HandleTypeDef *hdma) {
         TIM_CHANNEL_STATE_SET(htim, TIM_CH, HAL_TIM_CHANNEL_STATE_READY);
         //ARGB_LOC_ST = ARGB_READY;
 
-		draw_run = false;
+		manager.frame_buffer.is_drawing = false;
+		manager.frame_buffer.is_ready = false;
 				
     }
     htim->Channel = HAL_TIM_ACTIVE_CHANNEL_CLEARED;
@@ -269,7 +292,7 @@ static void RGB_TIM_DMADelayPulseCplt(DMA_HandleTypeDef *hdma) {
 
 
 
-#define FIRE_HEIGHT 16
+//#define FIRE_HEIGHT 16
 
 
 uint16_t iterator11(uint16_t i) {
@@ -283,7 +306,7 @@ uint16_t iterator11(uint16_t i) {
 	
 	return index;
 }
-
+/*
 uint16_t iterator111(uint16_t i) {
     int width = 128;
     int height = 16;
@@ -342,11 +365,11 @@ void updateFireEffect() {
             color.G = intensity / 8;//(intensity > 128) ? (255 - intensity) * 2 : intensity / 2;
             color.R = intensity;
             color.B = 0;
-            _frame_buff[ iterator111(x + y * CFG_Width) ] = color;
+            frame_buffer.pixel[ iterator111(x + y * CFG_Width) ] = color;
         }
     }
 }
-
+*/
 
 /*
 #define STAR_COUNT 50
@@ -435,11 +458,29 @@ void space_flight_loop() {
 
 
 
+/*
+	Конвертор индексов 2D кадрового буфера в вертикальный зиг-заг, сверху-вниз, слево-направо (светодиодне панели)
+*/
+uint16_t iterator1(uint16_t input, uint8_t width = 128, uint8_t height = 16)
+{
+	uint8_t row = input / width;
+	uint8_t col = input % width;
+	uint16_t index = col * height + (col % 2 == 0 ? row : (height - row - 1));
+	
+	return index;
+}
 
-
-
-
-
+/*
+	Конвертор индексов 2D кадрового буфера в горизонтальный зиг-заг, слево-направо, сверху-вниз (светодиодне ленты)
+*/
+uint16_t iterator2(uint16_t input, uint8_t width = 128, uint8_t height = 16)
+{
+	uint8_t row = input / width;
+	uint8_t col = input % width;
+	uint16_t index = row * width + (row % 2 == 0 ? col : (width - col - 1));
+	
+	return index;
+}
 
 
 
@@ -447,6 +488,10 @@ void space_flight_loop() {
 
 inline void Setup()
 {
+	srand( Analog::mux.Get(10) * 10 );
+
+	manager.frame_buffer.Convertor = iterator1;
+	manager.SelectEffect(effect_fire);
 
 #ifdef ROOT_DIRECTORY
 	//f_chdir(ROOT_DIRECTORY);
@@ -486,14 +531,14 @@ inline void Setup()
 */	
 
 
-		frame_buffer_ptr = (uint8_t *)_frame_buff;
-		frame_buffer_len = sizeof(_frame_buff);
+		frame_buffer_ptr = manager.frame_buffer.raw;
+		frame_buffer_len = sizeof(manager.frame_buffer.raw);
 
 
 	
-	MX_DMA_Init();
-	MX_TIM2_Init();
-	DMAInit();
+		SetupHW();
+
+		//frame_buffer.is_ready = trie;
 
 	//init_stars();
 	
@@ -505,7 +550,31 @@ uint32_t timer1, timer2, timer3, timer12, timer23;
 inline void Loop(uint32_t &current_time)
 {
 
+	static uint8_t idx = 0;
+	static uint32_t tick = 0;
+	if(current_time - tick > (30 * 1000))
+	{
+		tick = current_time;
 
+		if(idx == 0)
+		{
+			manager.SelectEffect(effect_fire);
+			idx = 1;
+		}
+		
+		else if(idx == 1)
+		{
+			manager.SelectEffect(effect_sphere);
+			idx = 0;
+		}
+	}
+
+
+
+
+	manager.Tick(current_time);
+
+/*
 	static uint32_t tick = 0;
 	if(current_time - tick > 1000)
 	{
@@ -513,11 +582,11 @@ inline void Loop(uint32_t &current_time)
 		
 		srand(Analog::mux.adc_value[11]);
 	}
-
+*/
 
 	
 	static uint16_t draw_idx = 0;
-	if(draw_run == false)
+	if(manager.frame_buffer.is_ready == true && manager.frame_buffer.is_drawing == false)
 	{
 /*
 		//memset(_frame_buff, 0x00, sizeof(_frame_buff));
@@ -529,11 +598,11 @@ inline void Loop(uint32_t &current_time)
 		_frame_buff[ iterator111(draw_idx) ] = {0x33, 0x00, 0x00};
 */		
 		//memset(_frame_buff, 0x00, sizeof(_frame_buff));
-		updateFireEffect();
+		//updateFireEffect();
 		//space_flight_loop();
 		DMADraw();
 
-		draw_run = true;
+		manager.frame_buffer.is_drawing = true;
 	}
 
 
