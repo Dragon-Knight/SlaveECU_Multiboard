@@ -282,182 +282,6 @@ static void RGB_TIM_DMADelayPulseCplt(DMA_HandleTypeDef *hdma) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-//#define FIRE_HEIGHT 16
-
-
-uint16_t iterator11(uint16_t i) {
-    int width = 128;
-    int height = 16;
-    
-	int row = i % height;
-	int col = i / height;
-	
-	int index = (col % 2 == 0) ? (row * width + col) : ((height - row - 1) * width + col);
-	
-	return index;
-}
-/*
-uint16_t iterator111(uint16_t i) {
-    int width = 128;
-    int height = 16;
-
-    int row = i / width;
-    int col = i % width;
-
-    int index;
-    
-    if (col % 2 == 0) {
-        index = row + col * height;
-    } else {
-        index = (height - row - 1) + col * height;
-    }
-
-    return index;
-}
-
-
-// Простая функция для генерации псевдослучайного числа
-float randFloat() {
-    return (float)rand() / (float)RAND_MAX;
-}
-
-// Простая 2D версия шума Перлина (упрощенная для МК)
-float perlinNoise(float x, float y) {
-    int n = (int)x + (int)y * 57;
-    n = (n << 13) ^ n;
-    return (1.0 - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0);
-}
-
-// Функция для обновления эффекта огня
-void updateFireEffect() {
-    static uint8_t firePixels[CFG_Width * FIRE_HEIGHT] = {0};
-
-    // Распространение огня вверх
-    for (int y = 0; y < FIRE_HEIGHT - 1; y++) {
-        for (int x = 0; x < CFG_Width; x++) {
-            int src = x + (y + 1) * CFG_Width;
-            int dst = x + y * CFG_Width;
-            uint8_t decay = rand() % 50;
-            firePixels[dst] = (firePixels[src] > decay) ? firePixels[src] - decay : 0;
-        }
-    }
-
-    // Генерация шума в нижней части буфера
-    for (int x = 0; x < CFG_Width; x++) {
-        firePixels[x + (FIRE_HEIGHT - 1) * CFG_Width] = (uint8_t)(perlinNoise(x * 0.1, randFloat() * 10) * 255);
-    }
-
-    // Преобразование в RGB буфер
-    for (int y = 0; y < FIRE_HEIGHT; y++) {
-        for (int x = 0; x < CFG_Width; x++) {
-            uint8_t intensity = firePixels[x + y * CFG_Width] / 16;
-            color_t color;
-            color.G = intensity / 8;//(intensity > 128) ? (255 - intensity) * 2 : intensity / 2;
-            color.R = intensity;
-            color.B = 0;
-            frame_buffer.pixel[ iterator111(x + y * CFG_Width) ] = color;
-        }
-    }
-}
-*/
-
-/*
-#define STAR_COUNT 50
-#define MAX_DEPTH 32.0f
-#define SPEED 0.5f
-
-static float ship_sway = 0.0f;
-static float sway_direction = 5.0f;
-
-typedef struct {
-    float x, y, z;
-} Star;
-
-Star stars[STAR_COUNT];
-
-void init_stars() {
-    for (int i = 0; i < STAR_COUNT; i++) {
-        stars[i].x = (float)(rand() % CFG_Width) - (CFG_Width / 2);
-        stars[i].y = (float)(rand() % CFG_Height) - (CFG_Height / 2);
-        stars[i].z = (float)(rand() % (int)MAX_DEPTH + 1);
-    }
-}
-
-void draw_pixel(int x, int y, color_t color) {
-    if (x >= 0 && x < CFG_Width && y >= 0 && y < CFG_Height) {
-        _frame_buff[ iterator111(y * CFG_Width + x) ] = color;
-    }
-}
-
-void clear_screen() {
-    memset(_frame_buff, 0, sizeof(_frame_buff));
-}
-
-void update_stars() {
-    for (int i = 0; i < STAR_COUNT; i++) {
-        stars[i].z -= SPEED;
-        if (stars[i].z <= 0) {
-            stars[i].x = (float)(rand() % CFG_Width) - (CFG_Width / 2);
-            stars[i].y = (float)(rand() % CFG_Height) - (CFG_Height / 2);
-            stars[i].z = MAX_DEPTH;
-        }
-    }
-
-    // Добавляем небольшое покачивание
-    ship_sway += 0.05f * sway_direction;
-    if (fabs(ship_sway) > 2.0f) {
-        sway_direction *= -1.0f;
-    }
-}
-
-void render_stars() {
-    for (int i = 0; i < STAR_COUNT; i++) {
-        int sx = (int)((stars[i].x / stars[i].z) * 40 + (CFG_Width / 2) + ship_sway);
-        int sy = (int)((stars[i].y / stars[i].z) * 40 + (CFG_Height / 2));
-
-        uint8_t brightness = (uint8_t)((1.0f - stars[i].z / MAX_DEPTH) * 255);
-        color_t star_color = { brightness, brightness, brightness };
-
-        draw_pixel(sx, sy, star_color);
-
-        // Рисуем хвост
-        int tail_length = (int)(5 * (1.0f - stars[i].z / MAX_DEPTH));
-        for (int t = 1; t <= tail_length; t++) {
-            int tail_x = (int)((stars[i].x / (stars[i].z + t * 2)) * 40 + (CFG_Width / 2) + ship_sway);
-            int tail_y = (int)((stars[i].y / (stars[i].z + t * 2)) * 40 + (CFG_Height / 2));
-			uint8_t tmp = (brightness / (uint8_t)(t + 1)) / 32;
-            color_t tail_color = { tmp, tmp, tmp };
-            draw_pixel(tail_x, tail_y, tail_color);
-        }
-    }
-}
-
-void space_flight_loop() {
-    clear_screen();
-    update_stars();
-    render_stars();
-}
-
-// Вызов init_stars() при старте
-// В основном цикле вызывай space_flight_loop() для обновления и отрисовки
-*/
-
-
-
-
-
-
-
 /*
 	Конвертор индексов 2D кадрового буфера в вертикальный зиг-заг, сверху-вниз, слево-направо (светодиодне панели)
 */
@@ -493,42 +317,6 @@ inline void Setup()
 	manager.frame_buffer.Convertor = iterator1;
 	manager.SelectEffect(effect_fire);
 
-#ifdef ROOT_DIRECTORY
-	//f_chdir(ROOT_DIRECTORY);
-#endif
-/*
-	matrixObj.RegLayer("layer0.pxl", 0);	// 0 - Фон / Заливка;
-	matrixObj.RegLayer("layer1.pxl", 1);	// 1 - Анимация;
-	matrixObj.RegLayer("layer2.pxl", 2);	// 2 - Габариты;
-	matrixObj.RegLayer("layer3.pxl", 3);	// 3 - Задних ход;
-	matrixObj.RegLayer("layer4.pxl", 4);	// 4 - Стопы;
-	matrixObj.RegLayer("layer5.pxl", 5);	// 5 - Повтороты лево;
-	matrixObj.RegLayer("layer6.pxl", 6);	// 6 - Повтороты право;
-	matrixObj.RegLayer("layer7.pxl", 7);	// 7 - Аварийка;
-
-	matrixObj.ShowLayer(0);
-	matrixObj.ShowLayer(1);
-	//matrixObj.ShowLayer(2);
-	//matrixObj.ShowLayer(3);
-	//matrixObj.ShowLayer(4);
-	//matrixObj.ShowLayer(5);
-	//matrixObj.ShowLayer(6);
-	//matrixObj.ShowLayer(7);
-	
-	matrixObj.SetBrightness(CFG_Brightness);
-	
-	matrixObj.GetFrameBuffer(frame_buffer_ptr, frame_buffer_len);
-
-	//matrixObj.ManualMode(true);
-	//matrixObj.DrawPixel(5, 0xFF0000FF);
-	//matrixObj.DrawPixel(6, 0xFF00FF00);
-	//matrixObj.DrawPixel(7, 0xFFFF0000);
-	//matrixObj.DrawPixel(8, 0xAAFFFFFF);
-	//matrixObj.DrawPixel(0, 0, 0xFF0000FF);
-	//matrixObj.DrawPixel(5, 2, 0xFF00FF00);
-	//matrixObj.DrawPixel(6, 3, 0xFFFF0000);
-	//matrixObj.ManualDraw();
-*/	
 
 
 		frame_buffer_ptr = manager.frame_buffer.raw;
@@ -538,9 +326,7 @@ inline void Setup()
 	
 		SetupHW();
 
-		//frame_buffer.is_ready = trie;
 
-	//init_stars();
 	
 	return;
 }
@@ -567,6 +353,8 @@ inline void Loop(uint32_t &current_time)
 			manager.SelectEffect(effect_sphere);
 			idx = 0;
 		}
+
+		
 	}
 
 

@@ -23,6 +23,7 @@ class WS2812ManagerInterface
 				uint8_t raw[(DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(color_t))];
 				color_t pixel[(DISPLAY_WIDTH * DISPLAY_HEIGHT)];
 			};
+			
 			uint16_t (*Convertor)(uint16_t input, uint8_t width, uint8_t height) = [](uint16_t input, uint8_t width, uint8_t height){ return input; };
 		};
 		

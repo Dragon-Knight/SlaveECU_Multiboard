@@ -24,19 +24,6 @@ class WS2812EffectFire : public WS2812EffectInterface
 		
 	private:
 		
-		// Простая функция для генерации псевдослучайного числа
-		float randFloat() {
-			return (float)rand() / (float)RAND_MAX;
-		}
-		
-		// Простая 2D версия шума Перлина (упрощенная для МК)
-		float perlinNoise(float x, float y)
-		{
-			uint32_t n = (int)x + ((int)y * 57);
-			n = (n << 13) ^ n;
-			return (1.0 - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0);
-		}
-		
 		// Функция для обновления эффекта огня
 		void updateFireEffect()
 		{
@@ -60,7 +47,7 @@ class WS2812EffectFire : public WS2812EffectInterface
 					if(x > 0 && x < width && firePixels[src] < 48)	// firePixels[src] < 48
 						dst += Random(-1, 1);
 					
-					firePixels[dst] = (firePixels[src] > decay) ? firePixels[src] - decay : 0;
+					firePixels[dst] = (firePixels[src] > decay) ? firePixels[src] - decay : firePixels[src] / 2; // : 0
 				}
 			}
 			
@@ -69,7 +56,11 @@ class WS2812EffectFire : public WS2812EffectInterface
 			{
 				dst = x + ((height - 1) * width);
 				
-				firePixels[dst] = (uint8_t)(perlinNoise(x * 1.1, randFloat() * 10) * 255);	// x * 0.1
+				firePixels[dst] = (uint8_t)(PerlinNoiseFloat(x * 1.1, RandomFloat() * 10) * 255);	// x * 0.1
+				//if(firePixels[dst] < 32) firePixels[dst] = 0;
+				
+				//firePixels[dst] = (uint8_t)(PerlinNoiseInt(x * 1, Random(0, 255) * 100) * 1);
+				//if(firePixels[dst] < 128) firePixels[dst] = 0;
 			}
 			
 			// Преобразование в RGB буфер
@@ -84,7 +75,7 @@ class WS2812EffectFire : public WS2812EffectInterface
 					color.R = intensity;
 					color.B = 0;
 					
-					uint16_t index = _frame_buffer->Convertor( dst, width, height);
+					uint16_t index = _frame_buffer->Convertor(dst, width, height);
 					_frame_buffer->pixel[index] = color;
 				}
 			}
